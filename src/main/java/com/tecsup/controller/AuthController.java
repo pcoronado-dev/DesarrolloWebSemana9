@@ -10,6 +10,7 @@ import com.tecsup.jwt.JwtUtils;
 import com.tecsup.repository.RoleRepository;
 import com.tecsup.repository.UserRepository;
 import com.tecsup.service.UserDetailsImpl;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,13 +46,7 @@ public class AuthController {
 
     @Transactional
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody SignupRequest signUpRequest) {
-        if (signUpRequest.getUsername() == null || signUpRequest.getUsername().isBlank()
-                || signUpRequest.getEmail() == null || signUpRequest.getEmail().isBlank()
-                || signUpRequest.getPassword() == null || signUpRequest.getPassword().isBlank()) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Username, email y password son obligatorios"));
-        }
-
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Username ya existe"));
         }
@@ -86,7 +81,7 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 loginRequest.getEmail(), loginRequest.getPassword()));

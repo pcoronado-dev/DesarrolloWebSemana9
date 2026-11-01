@@ -1,0 +1,258 @@
+{
+  "info": {
+    "name": "Laboratorio S09 - JWT",
+    "description": "Coleccion para probar el laboratorio de autenticacion JWT con Spring Boot. Ejecuta primero los signup, luego los signin (guardan los tokens) y finalmente las rutas protegidas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "tokenAdmin", "value": "" },
+    { "key": "tokenUser", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Signup ADMIN",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"email\": \"admin@test.com\",\n  \"password\": \"123456\",\n  \"roles\": [\"ADMIN\"]\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/signup", "host": ["{{baseUrl}}"], "path": ["api", "auth", "signup"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Usuario registrado (200)', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Signup USER",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"user1\",\n  \"email\": \"user@test.com\",\n  \"password\": \"123456\",\n  \"roles\": [\"USER\"]\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/signup", "host": ["{{baseUrl}}"], "path": ["api", "auth", "signup"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Usuario registrado (200)', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Signin ADMIN",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@test.com\",\n  \"password\": \"123456\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/signin", "host": ["{{baseUrl}}"], "path": ["api", "auth", "signin"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login exitoso (200)', () => pm.response.to.have.status(200));",
+              "pm.test('Devuelve accessToken y roles', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.accessToken).to.be.a('string').and.not.empty;",
+              "  pm.expect(body.roles).to.include('ROLE_ADMIN');",
+              "});",
+              "pm.collectionVariables.set('tokenAdmin', pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Signin USER",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user@test.com\",\n  \"password\": \"123456\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/signin", "host": ["{{baseUrl}}"], "path": ["api", "auth", "signin"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login exitoso (200)', () => pm.response.to.have.status(200));",
+              "pm.test('Devuelve accessToken y roles', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.accessToken).to.be.a('string').and.not.empty;",
+              "  pm.expect(body.roles).to.include('ROLE_USER');",
+              "});",
+              "pm.collectionVariables.set('tokenUser', pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Login con password incorrecto (401)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user@test.com\",\n  \"password\": \"incorrecto\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/signin", "host": ["{{baseUrl}}"], "path": ["api", "auth", "signin"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Credenciales invalidas (401)', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Ruta publica /api/test/all",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/test/all", "host": ["{{baseUrl}}"], "path": ["api", "test", "all"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Acceso publico (200)', () => pm.response.to.have.status(200));",
+              "pm.test('Devuelve Public Content', () => pm.expect(pm.response.text()).to.eql('Public Content'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Ruta USER con token USER (200)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenUser}}" }],
+        "url": { "raw": "{{baseUrl}}/api/test/user", "host": ["{{baseUrl}}"], "path": ["api", "test", "user"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Acceso autorizado (200)', () => pm.response.to.have.status(200));",
+              "pm.test('Devuelve User Content', () => pm.expect(pm.response.text()).to.eql('User Content'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Ruta ADMIN con token USER (403)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenUser}}" }],
+        "url": { "raw": "{{baseUrl}}/api/test/admin", "host": ["{{baseUrl}}"], "path": ["api", "test", "admin"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Rol insuficiente (403)', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Ruta ADMIN con token ADMIN (200)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+        "url": { "raw": "{{baseUrl}}/api/test/admin", "host": ["{{baseUrl}}"], "path": ["api", "test", "admin"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Acceso autorizado (200)', () => pm.response.to.have.status(200));",
+              "pm.test('Devuelve Admin Content', () => pm.expect(pm.response.text()).to.eql('Admin Content'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Ruta protegida sin token (401)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/test/user", "host": ["{{baseUrl}}"], "path": ["api", "test", "user"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Sin token (401)', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Ruta protegida con token invalido (401)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer token.invalido.aqui" }],
+        "url": { "raw": "{{baseUrl}}/api/test/user", "host": ["{{baseUrl}}"], "path": ["api", "test", "user"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Token invalido (401)', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

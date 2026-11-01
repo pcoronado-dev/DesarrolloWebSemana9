@@ -3,6 +3,8 @@ package com.tecsup.jwt;
 import com.tecsup.service.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -12,6 +14,8 @@ import java.util.Date;
 
 @Component
 public class JwtUtils {
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+
     @Value("${jwt.secret}")
     private String jwtSecret;
 
@@ -50,7 +54,7 @@ public class JwtUtils {
                 .parseClaimsJws(authToken);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            System.out.println("JWT invalido: " + e.getMessage());
+            logger.warn("Token JWT invalido: {}", e.getMessage());
             return false;
         }
     }

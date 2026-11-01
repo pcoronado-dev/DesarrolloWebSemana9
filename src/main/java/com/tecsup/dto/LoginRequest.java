@@ -1,7 +1,14 @@
 package com.tecsup.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 public class LoginRequest {
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El email no tiene un formato valido")
     private String email;
+
+    @NotBlank(message = "El password es obligatorio")
     private String password;
 
     public String getEmail() { return email; }
